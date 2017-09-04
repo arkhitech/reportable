@@ -86,12 +86,12 @@ module Saulabs
 
         def self.prepare_result(new_data, cached_data, report, options)
           new_data = new_data.to_a.map { |data| [ReportingPeriod.from_db_string(options[:grouping], data[0]), data[1]] }
-          cached_data.to_a.map! { |cached| [ReportingPeriod.new(options[:grouping], cached.reporting_period), cached.value] }
+          cached_data_array = cached_data.to_a.map! { |cached| [ReportingPeriod.new(options[:grouping], cached.reporting_period), cached.value] }
           current_reporting_period = ReportingPeriod.new(options[:grouping])
           reporting_period = get_first_reporting_period(options)
           result = []
           while reporting_period < (options[:end_date] ? ReportingPeriod.new(options[:grouping], options[:end_date]).next : current_reporting_period)
-            if cached = cached_data.find { |cached| reporting_period == cached[0] }
+            if cached = cached_data_array.find { |cached| reporting_period == cached[0] }
               result << [cached[0].date_time, cached[1]]
             elsif reporting_period.last_date_time.past?
               new_cached = build_cached_data(report, options[:grouping], options[:conditions], reporting_period, find_value(new_data, reporting_period))
